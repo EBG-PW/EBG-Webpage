@@ -1,0 +1,30 @@
+---
+const { onClick = () => {} } = Astro.props;
+---
+
+<style lang="scss">
+   button {
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid white;
+
+      color: white;
+      padding: 12px 16px;
+
+      font-size: 1rem;
+      font-family: Arial, Helvetica, sans-serif;
+      border-radius: 8px;
+
+      cursor: pointer;
+
+      transition:
+         0.25s background-color,
+         0.25s color;
+
+      &:hover {
+         background-color: white;
+         color: black;
+      }
+   }
+</style>
+
+<button onclick={onClick} role="button"><slot /></button>

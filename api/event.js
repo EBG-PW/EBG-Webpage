@@ -25,6 +25,11 @@ const avaiableColors = [
     'lime'
 ];
 
+const pageCheck = Joi.object({
+    page: Joi.number().min(0).max(32000).default(0),
+    size: Joi.number().min(0).max(50).default(10)
+});
+
 const NewEventCheck = Joi.object({
     eventName: Joi.fullysanitizedString().min(3).max(128).required(),
     color: Joi.string().valid(...avaiableColors).required(),
@@ -37,7 +42,25 @@ const NewEventCheck = Joi.object({
     description: Joi.sanitizedString().min(3).max(2048).required()
 });
 
-router.post('/', verifyRequest('web.event.create.event'), limiter(), async (req, res) => {
+const ValidateUUID = Joi.object({
+    id: Joi.string().uuid().required()
+});
+
+router.get('/', verifyRequest('web.event.get.events.read'), limiter(), async (req, res) => {
+    const value = await pageCheck.validateAsync(req.query);
+    const events = await event.GetByPage(Number(value.page) - 1, value.size);
+    res.status(200);
+    res.json(events);
+});
+
+router.get('/:id', verifyRequest('web.event.get.event.read'), limiter(), async (req, res) => {
+    const value = await ValidateUUID.validateAsync(req.params);
+    const event_data = await event.GetByUUID(value.id);
+    res.status(200);
+    res.json(event_data[0]);
+});
+
+router.post('/', verifyRequest('web.event.create.event.write'), limiter(), async (req, res) => {
     const value = await NewEventCheck.validateAsync(await req.json());
     if (!value) throw new InvalidRouteInput('Invalid Route Input');
     const { eventName, color, minGroup, visibility, dateApply, dateStart, dateEnd, location, description } = value;
@@ -48,12 +71,16 @@ router.post('/', verifyRequest('web.event.create.event'), limiter(), async (req,
 
     const event_response = await event.create(eventName, description, '', color, location, dateStart, dateEnd, dateApply, minGroup, visibility, 0, req.user.user_id);
 
-    console.log(event_response);
-
     res.status(200);
     res.json({
         puuid: event_response,
     });
+});
+
+router.get('/count', verifyRequest('web.event.get.count.read'), limiter(), async (req, res) => {
+    const amount = await event.GetCount();
+    res.status(200);
+    res.json(amount);
 });
 
 module.exports = {

@@ -1,5 +1,8 @@
 {
   "de": "Deutsch",
+  "Page": {
+    "Search": "Suche..."
+  },
   "Login": {
     "Title": "Anmelden",
     "Header": "Anmelden",
@@ -181,6 +184,14 @@
   },
   "Events": {
     "Body": {
+      "Card": {
+        "Participates": "Du nimmst teil",
+        "JoinButton": "Beitreten",
+        "Location": "Veranstaltungsort",
+        "JoinDate": "Anmeldung bis",
+        "StartDate": "Start Datum",
+        "EndDate": "End Datum"
+      },
       "Head": {
         "Title": "Veranstaltungen",
         "SubTitle": "Hier kannst du Veranstaltungen erstellen, beitreten oder verwalten.",
@@ -212,6 +223,12 @@
             "Cancel": "Abbrechen",
             "AddNew": "Neue Veranstaltung erstellen"
         }
+    },
+    "Settings": {
+      "Site": {
+        "General": "Allgemeine Einstellungen",
+        "OAuth": "OAuth Einstellungen"
+      }
     }
   },
   "Error": {

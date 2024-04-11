@@ -3,6 +3,7 @@ const { expressCspHeader, INLINE, NONE, SELF } = require('express-csp-header');
 const fs = require('fs');
 const path = require('path');
 const ejs = require('ejs');
+const { ViewRenderer } = require('@lib/template');
 const app = new HyperExpress.Server({
     fast_buffers: process.env.HE_FAST_BUFFERS == 'false' ? false : true || false,
 });
@@ -32,73 +33,9 @@ app.use(expressCspHeader({
     }
 }));
 
-/* Server Static Files */
-
-app.get('/', (req, res) => {
-    res.header('Content-Type', 'text/html');
-    res.send(fs.readFileSync(path.join(__dirname, '..', 'public', 'landingpage.html')));
-})
-
-app.get('/login', (req, res) => {
-    res.header('Content-Type', 'text/html');
-    res.sendFile(path.join(__dirname, '..', 'public', 'auth', 'sign-in.html'));
-});
-
-app.get('/register', (req, res) => {
-    res.header('Content-Type', 'text/html');
-    res.sendFile(path.join(__dirname, '..', 'public', 'auth', 'sign-up.html'));
-});
-
-app.get('/requestresetpassword', (req, res) => {
-    res.header('Content-Type', 'text/html');
-    res.sendFile(path.join(__dirname, '..', 'public', 'auth', 'reset-password-request.html'));
-});
-
-app.get('/dashboard', (req, res) => {
-    res.header('Content-Type', 'text/html');
-    res.sendFile(path.join(__dirname, '..', 'public', 'dashboard.html'));
-});
-
-app.get('/projects', (req, res) => {
-    res.header('Content-Type', 'text/html');
-    res.sendFile(path.join(__dirname, '..', 'public', 'projects.html'));
-});
-
-app.get('/events', (req, res) => {
-    res.header('Content-Type', 'text/html');
-    res.sendFile(path.join(__dirname, '..', 'public', 'events.html'));
-});
-
-app.get('/profile', (req, res) => {
-    res.header('Content-Type', 'text/html');
-    res.sendFile(path.join(__dirname, '..', 'public', 'profile.html'));
-});
-/*
-app.get('/apps', (req, res) => {
-    res.header('Content-Type', 'text/html');
-    res.sendFile(path.join(__dirname, '..', 'public', 'apps.html'));
-});
-*/
-app.get('/settings-account', (req, res) => {
-    res.header('Content-Type', 'text/html');
-    res.sendFile(path.join(__dirname, '..', 'public', 'settings-account.html'));
-});
-
-app.get('/settings-misc', (req, res) => {
-    res.header('Content-Type', 'text/html');
-    res.sendFile(path.join(__dirname, '..', 'public', 'settings-misc.html'));
-});
-
-app.get('/settings-links', (req, res) => {
-    res.header('Content-Type', 'text/html');
-    res.sendFile(path.join(__dirname, '..', 'public', 'settings-links.html'));
-});
-
-// Legal Pages
-app.get('/legal/legal', (req, res) => {
-    res.header('Content-Type', 'text/html');
-    res.sendFile(path.join(__dirname, '..', 'public', 'legal', 'legal.html'));
-});
+const renderer = new ViewRenderer(app, path.join(__dirname, '..', 'views'));
+renderer.registerStaticRoutes(path.join(__dirname, '..', 'views'), ["error-xxx.ejs", "landingpage.ejs"]);
+renderer.registerDynamicRoutes();
 
 const apiv1 = require('@api');
 const auth_handler = require('@static_api/auth');
@@ -139,7 +76,8 @@ app.get('/*', (req, res) => {
         res.send(fs.readFileSync(path.join(__dirname, '..', 'public', filePath)));
     } catch (error) {
         process.log.error(error)
-        ejs.renderFile(path.join(__dirname, '..', 'views', 'error', 'error-xxx.ejs'), {statusCode: 404, message: "Page not found", info: "Request can not be served", reason: "The requested page was not found", back_url: process.env.DOMAIN}, (err, str) => {
+        ejs.renderFile(path.join(__dirname, '..', 'views', 'error', 'error-xxx.ejs'), {statusCode: 404, message: "Page not found", info: "Request can not be served", reason: "The requested page was not found", domain: process.env.DOMAIN, back_url: process.env.DOMAIN}, (err, str) => {
+            if(err) throw err;
             res.header('Content-Type', 'text/html');
             res.send(str);
         });
@@ -151,7 +89,6 @@ app.use('/auth', auth_handler);
 
 /* Handlers */
 app.set_error_handler((req, res, error) => {
-    console.log(error)
     process.log.debug(error);
     const outError = {
         message: error.message || "",
@@ -186,9 +123,9 @@ app.set_error_handler((req, res, error) => {
     }
 
     if (log_errors[error.name]) process.log.error(`[${outError.statusCode}] ${req.method} "${req.url}" >> ${outError.message} in "${error.path}:${error.fileline}"`);
+    if(error.error) console.log(error.error)
     res.status(outError.statusCode);
     if (outError.headers) { res.header(outError.headers.name, outError.headers.value); }
-
     if (outError.back_url) {
         outError.domain = process.env.DOMAIN; // Apend the domain to the error
         ejs.renderFile(path.join(__dirname, '..', 'views', 'error', 'error-xxx.ejs'), outError, (err, str) => {

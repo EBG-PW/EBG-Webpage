@@ -117,7 +117,7 @@ const emailtransporter = nodemailer.createTransport({
 
     } catch (error) {
       process.log.error(error);
-      process.log.error(job.data);
+      process.log.error(JSON.stringify(job.data));
       throw error;
     }
 

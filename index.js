@@ -14,7 +14,6 @@ process.log = log;
 
 // Render Templates
 const path = require('path');
-const { renderEJSToPublic } = require('@lib/template');
 /* Load some config data, thats needed to render the HTML pages on startup */
 // Get all translation files from \public\dist\locales and generate a context object ({ [language]: [file key.language] })
 const localesDir = path.join(__dirname, 'public', 'dist', 'locales');
@@ -37,7 +36,7 @@ process.countryConfig = countryConfig; // Used for language dropdowns
 process.linkableapps = require('@config/linkable_apps.js');
 process.permissions_config = require('@config/permissions.js');
 
-renderEJSToPublic(path.join(__dirname, 'views'), path.join(__dirname, 'public'), ["error-xxx.ejs", "landingpage.ejs"]);
+// renderEJSToPublic(path.join(__dirname, 'views'), path.join(__dirname, 'public'), ["error-xxx.ejs", "landingpage.ejs"]);
 
 (async () => {
     const { createTables } = require('@lib/postgres');

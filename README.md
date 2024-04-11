@@ -13,6 +13,7 @@
   - [ ] Automatic backups + monitoring
   - [ ] Resources, Uptime, Network, IO
   - [ ] Web server config creation / maintaining
+  - [ ] SMART Disk Monitoring
   - [ ] Package managers
 - [ ] Application Monitoring (Split Service)
   - [ ] Uptime

@@ -4,6 +4,7 @@
 */
 module.exports = {
     "log_errors": {
+        "RenderError": true,
         "TooManyRequests": true,
         "InvalidToken": true,
         "Invalid2FA": false,

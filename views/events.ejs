@@ -179,7 +179,7 @@
                 <div class="d-flex">
                   <div class="me-3">
                     <div class="input-icon">
-                      <input type="text" value="" class="form-control" placeholder="Search…">
+                      <input type="text" value="" class="form-control" id="PageSearch" data-translate-placeholder="Page.Search" placeholder="">
                       <span class="input-icon-addon">
                         <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" /></svg>
                       </span>
@@ -197,7 +197,8 @@
         <!-- Page body -->
         <div class="page-body">
           <div class="container-xl">
-            <!-- Content here -->
+            <div class="row row-cards row-deck" id="event-container"></div>
+            <div id="paginationContainer"></div>
           </div>
         </div>
         <footer class="footer footer-transparent d-print-none">
@@ -409,6 +410,111 @@
     <script src="<%= domain %>/dist/js/i18next.min.js?1684106062"></script>
     <script src="<%= domain %>/appjs/layout.js"></script>
     <script>
+      // Load events and display them
+      const loadPageContent = (page, size) => {
+        fetch(`api/v1/event?page=${page}&size=${size}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + localStorage.getItem("token")
+        }
+        }).then(async (response) => {
+          const response_json = await response.json();
+          if (response.status == 200) {
+            const eventContainer = document.getElementById("event-container");
+            eventContainer.innerHTML = "";
+            response_json.forEach(event => {
+              eventContainer.innerHTML += `<div class="col-12">
+                <a class="card card-link" href="/event/${event.puuid}">
+                  <div class="card-status-top bg-${event.color}"></div>
+                  <div class="d-flex" style="align-items: flex-start;">
+                    <div style="flex: 0 0 auto; width: 164px; height: 164px; overflow: hidden;">
+                      <img src="${event.avatar_url}" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div style="flex-grow: 1; padding-left: 8px;">
+                      <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                          <h3 class="card-title">${event.name}</h3>
+                          <div>
+                            ${event.user_participates ? `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-user-check">
+                              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                              <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"/>
+                              <path d="M6 21v-2a4 4 0 0 1 4 -4h4"/>
+                              <path d="M15 19l2 2l4 -4"/>
+                            </svg>
+                            <span>${i18next.t("Events.Body.Card.Participates")}</span>` : `<div class="btn btn-primary" style="cursor: pointer;">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 5v14M5 12h14" /></svg>
+                              <div>${i18next.t("Events.Body.Card.JoinButton")}</div>
+                              </div>`}
+                          </div>
+                        </div>
+                        <p class="text-secondary">${event.description}</p>
+                        <div>
+                          <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-map-pin"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /><path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z" /></svg>
+                          ${i18next.t("Events.Body.Card.Location")}: ${event.location_address}
+                        </div>
+                        <div class="d-flex justify-content-between">
+                          <div class="mt-3">
+                            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-alarm"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 13m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M12 10l0 3l2 0" /><path d="M7 4l-2.75 2" /><path d="M17 4l2.75 2" /></svg>
+                            <span>${i18next.t("Events.Body.Card.JoinDate")}: ${new Date(event.date_apply).toLocaleString()}</span>
+                          </div>
+                          <div class="mt-3">
+                            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-calendar-event"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" /><path d="M16 3l0 4" /><path d="M8 3l0 4" /><path d="M4 11l16 0" /><path d="M8 15h2v2h-2z" /></svg>
+                            <span>${i18next.t("Events.Body.Card.StartDate")}: ${new Date(event.date_start).toLocaleString()}</span>
+                          </div>
+                          <div class="mt-3">
+                            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-calendar-event"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" /><path d="M16 3l0 4" /><path d="M8 3l0 4" /><path d="M4 11l16 0" /><path d="M8 15h2v2h-2z" /></svg>
+                            <span>${i18next.t("Events.Body.Card.EndDate")}: ${new Date(event.date_end).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              `;
+            });
+          } else {
+            // Error
+          }
+        });
+      }
+
+      fetch(`api/v1/event/count`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + localStorage.getItem("token")
+        }
+      }).then(async (response) => {
+        const response_json = await response.json();
+        if (response.status == 200) {
+          generatePagination(parseInt(response_json, 10), 10, 1, loadPageContent);
+        } else {
+          // Error
+        }
+      });
+
+      const joinEvent = (puuid) => {
+        fetch("api/v1/event/join", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + localStorage.getItem("token")
+          },
+          body: JSON.stringify({
+            puuid: puuid
+          })
+        }).then(async (response) => {
+          const response_json = await response.json();
+          if (response.status == 200) {
+            // Success
+          } else {
+            // Error
+          }
+        });
+      }
+
       const keys = {
         "eventName": "NewEventEventName",
         "minGroup": "NewEventMinGroup",
@@ -479,3 +585,4 @@
     </script>
   </body>
 </html>
+

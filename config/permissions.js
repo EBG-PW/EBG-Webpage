@@ -55,21 +55,24 @@ module.exports = {
             ],
             "inherit": [
                 "admin"
-            ]
+            ],
+            "is_team": true
         },
         "schriftführer": {
             "permissions": [
             ],
             "inherit": [
                 "admin"
-            ]
+            ],
+            "is_team": true
         },
         "obmann": {
             "permissions": [
             ],
             "inherit": [
                 "admin"
-            ]
+            ],
+            "is_team": true
         },
         // The admin group is the default group for administrators.
         "admin": {

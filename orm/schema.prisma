@@ -1,0 +1,199 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             BigInt    @id @default(autoincrement())
+  puuid          String    @unique @default(dbgenerated("uuid_generate_v4()"))
+  username       String?   @unique
+  email          String?   @unique
+  email_verified DateTime?
+  password       String?
+  user_group     String?
+  first_name     String?
+  last_name      String?
+  bio            String?
+  avatar_url     String?
+  public         Boolean   @default(false)
+  legal          DateTime  @default(now())
+  twofa_secret   String?
+  twofa_time     DateTime  @default(now())
+  twofa_token    String?
+  time           DateTime  @default(now())
+
+  settings           UsersSettings?
+  addresses          UsersAddresses[]
+  accounts           UsersAccounts[]
+  permissions        UsersPermissions[]
+  links              UsersLinks[]
+  integrations       UsersIntegrations[]
+  projectActivities  ProjectActivityUsers[]
+  webtokens          Webtokens[]
+  confirmationTokens ConfirmationTokens[]
+  OauthToken         OauthToken[]
+
+  @@map("users")
+}
+
+model UsersSettings {
+  user_id  BigInt  @id
+  design   String?
+  language String?
+  user     User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("users_settings")
+}
+
+model UsersAddresses {
+  user_id BigInt  @id
+  address String?
+  city    String?
+  state   String?
+  zip     String?
+  country String?
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("users_addresses")
+}
+
+model UsersAccounts {
+  user_id     BigInt  @id
+  app         String
+  account_id  String?
+  profile_url String?
+  user        User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("users_accounts")
+}
+
+model UsersPermissions {
+  user_id    BigInt   @id
+  permission String
+  read       Boolean
+  write      Boolean
+  time       DateTime @default(now())
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("users_permissions")
+}
+
+model UsersLinks {
+  user_id  BigInt @id
+  platform String
+  data_val String
+  user     User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("users_links")
+}
+
+model UsersIntegrations {
+  user_id          BigInt @id
+  platform         String
+  unique_remote_id String
+  user             User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("users_integrations")
+}
+
+model ProjectActivity {
+  id               Int       @id @default(autoincrement())
+  puuid            String    @unique @default(dbgenerated("uuid_generate_v4()"))
+  type             Int
+  name             String?
+  description      String?
+  avatar_url       String?
+  color            String?
+  location_address String?
+  date_start       DateTime?
+  date_end         DateTime?
+  date_created     DateTime  @default(now())
+  date_apply       DateTime?
+  min_group        String?
+  visibility       Int
+  state            Int
+  creator_user_id  Int
+
+  users    ProjectActivityUsers[]
+  timeline ProjectActivityTimeline[]
+
+  @@map("projectactivities")
+}
+
+model ProjectActivityUsers {
+  activity_id    Int
+  user_id        BigInt
+  activity_group String?
+  notification   Boolean         @default(true)
+  has_logged_in  Boolean         @default(false)
+  time           DateTime        @default(now())
+  activity       ProjectActivity @relation(fields: [activity_id], references: [id], onDelete: Cascade)
+  user           User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@id([activity_id, user_id])
+  @@map("projectactivity_users")
+}
+
+model ProjectActivityTimeline {
+  activity_id Int
+  content     String
+  time        DateTime        @default(now())
+  activity    ProjectActivity @relation(fields: [activity_id], references: [id], onDelete: Cascade)
+
+  @@id([activity_id, time])
+  @@map("projectactivity_timeline")
+}
+
+model OauthApp {
+  id           BigInt       @id @default(autoincrement())
+  name         String
+  avatar_url   String?
+  scope        BigInt
+  client_id    String       @unique
+  secret       String
+  redirect_url String?
+  time         DateTime     @default(now())
+  tokens       OauthToken[]
+
+  @@map("oauth_apps")
+}
+
+model OauthToken {
+  user_id            BigInt
+  app_id             BigInt
+  access_token       String
+  time_access_token  DateTime @default(now())
+  refresh_token      String
+  time_refresh_token DateTime @default(now())
+  user               User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  app                OauthApp @relation(fields: [app_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, app_id])
+  @@map("oauth_tokens")
+}
+
+model Webtokens {
+  user_id BigInt
+  token   String   @id
+  browser String?
+  time    DateTime @default(now())
+  user    User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("webtokens")
+}
+
+model ConfirmationTokens {
+  user_id BigInt
+  type    String
+  token   String
+  data    String?
+  time    DateTime @default(now())
+  user    User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@id([type, token])
+  @@map("confirmation_tokens")
+}

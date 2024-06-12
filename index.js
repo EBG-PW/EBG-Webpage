@@ -42,9 +42,6 @@ process.permissions_config = require('@config/permissions.js');
 
 (async () => {
     try {
-        const { createTables } = require('@lib/postgres');
-        await createTables();
-
         setTimeout(() => {
             const app = require('@src/app');
 

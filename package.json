@@ -21,7 +21,11 @@
     "@config": "./config",
     "@e2etest": "./e2e-test/*"
   },
+  "prisma": {
+    "schema": "orm/schema.prisma"
+  },
   "dependencies": {
+    "@prisma/client": "^5.15.0",
     "bcrypt": "^5.1.1",
     "bullmq": "^5.4.1",
     "cors": "^2.8.5",

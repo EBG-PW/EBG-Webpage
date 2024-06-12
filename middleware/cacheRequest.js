@@ -44,11 +44,14 @@ const plublicStaticCache = (duration, objOptions = [], overwrite = null) => {
             res.send = function (data) {
                 res.body = data;
                 if (!res.bodyType) res.bodyType = 0;
+                res.statusCode = res.statusCode || 200;
                 oldSend.apply(res, arguments);
             }
 
             res.json = function (obj) {
                 res.bodyType = 1;
+                res.statusCode = res.statusCode || 200;
+                res.type('application/json')
                 oldJson.call(this, obj);
             };
 

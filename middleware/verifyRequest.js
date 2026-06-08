@@ -5,7 +5,7 @@ const { delWebtoken, IPLimit, IPCheck } = require('@lib/cache');
 const { InvalidToken, TooManyRequests, PermissionsError } = require('@lib/errors');
 const Joi = require('joi');
 const { webtoken } = require('@lib/postgres');
-const useragent = require('express-useragent');
+const { parseUserAgent } = require('@lib/useragent');
 
 /**
  * Async function to verify the request based on the given permission. User data will be added to the request. (req.user)
@@ -18,7 +18,7 @@ const verifyRequest = (permission) => {
             let UserToken;
             const IP = getIpOfRequest(req);
             const source = req.headers['user-agent']
-            const UserAgent = useragent.parse(source)
+            const UserAgent = parseUserAgent(source)
 
             const isBlocked = await IPCheck(IP);
             if(isBlocked.result) throw new TooManyRequests('Too Many Requests', isBlocked.retryIn)

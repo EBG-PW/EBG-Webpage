@@ -6,7 +6,7 @@ const randomstring = require('randomstring');
 const HyperExpress = require('hyper-express');
 const fs = require('fs');
 const { PermissionsError, InvalidRouteInput, OAuthError, DBError, InvalidLogin } = require('@lib/errors');
-const useragent = require('express-useragent');
+const { parseUserAgent } = require('@lib/useragent');
 const router = new HyperExpress.Router();
 const auth_config = require('@config/auth');
 const { generateUrlPath, getIpOfRequest, getCountryOfIP } = require('@lib/utils');
@@ -159,7 +159,7 @@ router.get('/github/callback', async (req, res) => {
         if (!allowed.result) throw new PermissionsError('NoPermissions', 'app.web.login');
 
         const source = req.headers['user-agent']
-        const UserAgent = useragent.parse(source)
+        const UserAgent = parseUserAgent(source)
 
         const WebToken = randomstring.generate({
             length: parseInt(process.env.WEBTOKENLENGTH, 10), //DO NOT CHANCE!!!
@@ -245,7 +245,7 @@ router.get('/google/callback', async (req, res) => {
         if (!allowed.result) throw new PermissionsError('NoPermissions', 'app.web.login');
 
         const source = req.headers['user-agent']
-        const UserAgent = useragent.parse(source)
+        const UserAgent = parseUserAgent(source)
 
         const WebToken = randomstring.generate({
             length: parseInt(process.env.WEBTOKENLENGTH, 10), //DO NOT CHANCE!!!

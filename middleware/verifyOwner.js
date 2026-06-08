@@ -1,7 +1,6 @@
 const { getUUIDRouteOwner } = require('@lib/cache');
 const { PermissionsError } = require('@lib/errors');
 const Joi = require('joi');
-const useragent = require('express-useragent');
 
 /**
  * Async function to verify if the user who made a request also ownes the resource he acceses.

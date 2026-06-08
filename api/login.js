@@ -6,7 +6,7 @@ const { verifyRequest } = require('@middleware/verifyRequest');
 const { getIpOfRequest, getCountryOfIP } = require('@lib/utils');
 const HyperExpress = require('hyper-express');
 const { PermissionsError, InvalidRouteInput, InvalidLogin, DBError, RequestBlocked } = require('@lib/errors');
-const useragent = require('express-useragent');
+const { parseUserAgent } = require('@lib/useragent');
 const bcrypt = require('bcrypt');
 const randomstring = require('randomstring');
 const router = new HyperExpress.Router();
@@ -72,7 +72,7 @@ router.post('/', async (req, res) => {
         });
     } else {
         const source = req.headers['user-agent']
-        const UserAgent = useragent.parse(source)
+        const UserAgent = parseUserAgent(source)
 
         const WebToken = randomstring.generate({
             length: parseInt(process.env.WEBTOKENLENGTH, 10), //DO NOT CHANCE!!!
@@ -123,7 +123,7 @@ router.post('/2fa', async (req, res) => {
     if (twofa_time_response.rowCount === 1) throw new DBError('Webtoken.Create', 1, typeof 1, twofa_time_response.rowCount, typeof twofa_time_response.rowCount);
 
     const source = req.headers['user-agent']
-    const UserAgent = useragent.parse(source)
+    const UserAgent = parseUserAgent(source)
 
     const WebToken = randomstring.generate({
         length: parseInt(process.env.WEBTOKENLENGTH, 10), //DO NOT CHANCE!!!

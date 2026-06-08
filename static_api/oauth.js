@@ -5,7 +5,6 @@ const oAuthPermissions = require('@lib/oauth/permissions');
 const randomstring = require('randomstring');
 const HyperExpress = require('hyper-express');
 const { PermissionsError, InvalidRouteInput, OAuthError, DBError, InvalidLogin } = require('@lib/errors');
-const useragent = require('express-useragent');
 const router = new HyperExpress.Router();
 const auth_config = require('@config/auth');
 const { generateUrlPath } = require('@lib/utils');

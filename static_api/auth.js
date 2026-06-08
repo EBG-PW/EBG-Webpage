@@ -17,6 +17,7 @@ const OAuthCheck = Joi.object({
 });
 
 const OAuthCheckGoogle = Joi.object({
+    iss: Joi.string().required(),
     code: Joi.string().required(),
     scope: Joi.string().required(),
     authuser: Joi.number().required(),
